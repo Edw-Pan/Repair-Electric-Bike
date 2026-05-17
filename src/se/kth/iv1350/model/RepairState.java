@@ -5,22 +5,32 @@ package se.kth.iv1350.model;
  */
 public enum RepairState {
     /**
-     * The repair has been received and is waiting to be started.
+     * Newly created (no diagnostic report or repair tasks).
      */
-    RECEIVED,
+    NEWLY_CREATED,
 
     /**
-     * The repair has been started and is currently being worked on.
+     * Ready for approval (a technician has entered diagnostic report and repair tasks).
      */
-    STARTED,
+    READY_FOR_APPROVAL,
 
     /**
-     * The repair is finished and the bike is ready to be picked up.
+     * Rejected (the customer didn't want to do the proposed repair tasks).
      */
-    FINISHED,
+    REJECTED,
 
     /**
-     * The bike has been picked up by the customer and the repair is completed.
+     * Accepted (the customer accepted the proposed repair tasks).
      */
-    PICKED_UP
+    ACCEPTED,
+
+    /**
+     * Completed (the reparation has been done, but the customer hasn't payed yet).
+     */
+    COMPLETED,
+
+    /**
+     * Payed (the customer has payed).
+     */
+    PAID
 }

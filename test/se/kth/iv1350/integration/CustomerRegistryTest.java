@@ -17,23 +17,24 @@ public class CustomerRegistryTest {
     }
 
     /**
-     * Tests that an existing customer can be found.
+     * Tests that searching for an existing customer works.
      */
     @Test
-    public void testFindExistingCustomer() {
+    public void testFindExistingCustomer() throws DatabaseFailureException {
         String existingId = "1";
         CustomerDTO result = registry.findCustomer(existingId);
-        assertNotNull(result, "Registry should find customer with ID '1'.");
-        assertEquals(existingId, result.getId(), "Found customer ID does not match search ID.");
+        assertNotNull(result, "Registry should find customer with ID 1.");
+        assertEquals(existingId, result.getId(), "Registry should return correct customer ID.");
     }
 
     /**
-     * Tests that searching for a non-existent customer returns null.
+     * Tests that searching for a non-existent customer throws CustomerNotFoundException.
      */
     @Test
     public void testFindNonExistentCustomer() {
-        String nonExistentId = "999";
-        CustomerDTO result = registry.findCustomer(nonExistentId);
-        assertNull(result, "Registry should return null for non-existent ID.");
+        String nonExistentId = "888";
+        assertThrows(CustomerNotFoundException.class, () -> {
+            registry.findCustomer(nonExistentId);
+        });
     }
 }

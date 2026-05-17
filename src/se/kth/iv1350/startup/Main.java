@@ -14,7 +14,7 @@ public class Main {
      * @param args The application does not take any command line arguments.
      */
     public static void main(String[] args) {
-        RegistryCreator regCreator = new RegistryCreator();
+        RegistryCreator regCreator = RegistryCreator.getInstance();
         Controller contr = new Controller(regCreator);
         View view = new View(contr);
         view.runFakeExecution();

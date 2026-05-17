@@ -14,6 +14,12 @@ public final class Amount {
     public Amount(int amount) { this.amount = amount; }
 
     /**
+     * Returns the amount.
+     * @return The amount.
+     */
+    public int getAmount() { return amount; }
+
+    /**
      * Adds the specified amount to this amount and returns a new instance with the result.
      *
      * @param other The amount to add.

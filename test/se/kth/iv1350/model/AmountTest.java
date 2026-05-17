@@ -28,4 +28,13 @@ public class AmountTest {
         Amount amount = new Amount(500);
         assertEquals("500 SEK", amount.toString(), "The toString method should return '500 SEK'.");
     }
+
+    /**
+     * Tests that the getAmount method returns the correct integer value.
+     */
+    @Test
+    public void testGetAmount() {
+        Amount amount = new Amount(750);
+        assertEquals(750, amount.getAmount(), "The getAmount method should return the integer value 750.");
+    }
 }

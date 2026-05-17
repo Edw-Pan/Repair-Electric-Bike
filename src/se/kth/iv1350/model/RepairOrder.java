@@ -2,6 +2,7 @@ package se.kth.iv1350.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDateTime;
 
 /**
  * Represents a repair order.
@@ -9,37 +10,68 @@ import java.util.List;
 public class RepairOrder {
     private final String orderId;
     private final CustomerDTO customer;
-    private RepairState state = RepairState.RECEIVED;
+    private final LocalDateTime creationTime;
+    private String problemDescription;
+    private String diagnosticReport;
+    private RepairState state = RepairState.NEWLY_CREATED;
     private final List<ServiceDTO> services = new ArrayList<>();
     private Amount totalCost = new Amount(0);
+    private final List<RepairOrderObserver> observers = new ArrayList<>();
+    private DiscountStrategy discountStrategy = new NoDiscount();
 
     /**
      * Creates a new instance.
      *
      * @param orderId  The order's ID.
      * @param customer The customer who owns the order.
+     * @param problemDescription A description of the problem.
      */
-    public RepairOrder(String orderId, CustomerDTO customer) {
+    public RepairOrder(String orderId, CustomerDTO customer, String problemDescription) {
         this.orderId = orderId;
         this.customer = customer;
+        this.problemDescription = problemDescription;
+        this.creationTime = LocalDateTime.now();
     }
 
     /**
-     * Adds a service to this repair order.
+     * Creates a new instance based on the specified DTO.
      *
-     * @param service The service to add.
+     * @param dto The DTO to use for initialization.
      */
+    public RepairOrder(RepairOrderDTO dto) {
+        this.orderId = dto.getOrderId();
+        this.customer = dto.getCustomer();
+        this.problemDescription = dto.getProblemDescription();
+        this.diagnosticReport = dto.getDiagnosticReport();
+        this.creationTime = dto.getCreationTime();
+        this.state = dto.getState();
+        this.services.addAll(dto.getServices());
+        this.totalCost = dto.getTotalCost();
+    }
+
+    public void setDiagnosticReport(String diagnosticReport) {
+        this.diagnosticReport = diagnosticReport;
+        notifyObservers();
+    }
+
     public void addService(ServiceDTO service) {
         services.add(service);
         totalCost = totalCost.plus(service.getPrice());
+        notifyObservers();
     }
 
-    /**
-     * Sets the state of this repair order.
-     *
-     * @param state The new state.
-     */
-    public void setState(RepairState state) { this.state = state; }
+    public void setState(RepairState state) { 
+        this.state = state; 
+        notifyObservers();
+    }
+
+    public void setDiscountStrategy(DiscountStrategy discountStrategy) {
+        this.discountStrategy = discountStrategy;
+    }
+
+    public void addObservers(List<RepairOrderObserver> observers) {
+        this.observers.addAll(observers);
+    }
 
     /**
      * Creates a DTO representation of this repair order.
@@ -47,33 +79,24 @@ public class RepairOrder {
      * @return A DTO representing this order.
      */
     public RepairOrderDTO toDTO() {
-        return new RepairOrderDTO(orderId, customer, state, services, totalCost);
+        Amount discountedCost = discountStrategy.calculateDiscount(totalCost);
+        // Bullet 21: Estimation is 2 hours after creation
+        LocalDateTime estimatedCompletion = creationTime.plusHours(2);
+        return new RepairOrderDTO(orderId, customer, problemDescription, diagnosticReport, 
+                                  state, services, discountedCost, creationTime, estimatedCompletion);
     }
 
-    /**
-     * Returns the order's ID.
-     *
-     * @return The order's ID.
-     */
-    public String getOrderId() { 
-        return orderId; 
+    private void notifyObservers() {
+        RepairOrderDTO dto = toDTO();
+        for (RepairOrderObserver observer : observers) {
+            observer.update(dto);
+        }
     }
 
-    /**
-     * Returns a string representation of the repair order.
-     *
-     * @return A string representation of the repair order.
-     */
+    public String getOrderId() { return orderId; }
+
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Order ").append(orderId).append(" [").append(state).append("]\n");
-        sb.append(" ").append(customer).append("\n");
-        sb.append(" Services:\n");
-        for (ServiceDTO service : services) {
-            sb.append("  - ").append(service).append("\n");
-        }
-        sb.append(" Total Cost: ").append(totalCost);
-        return sb.toString();
+        return toDTO().toString();
     }
 }
